@@ -1,0 +1,107 @@
+﻿
+@{ 
+    ViewBag.Title = "Listagem de Produtos";
+}
+<center><h2>@ViewBag.Title</h2></center>
+
+    <div class="mb-1">
+        <a class="btn btn-outline-info" href="~/Produtos/AddEdit">Novo Produto  <i class="fas fa-plus-circle"></i>  </a>
+    </div>
+
+    <table class="table table-striped table-hover table-responsive p-3">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Preço</th>
+                <th>Tipo</th>
+                <th>Quantidade</th>
+                <th>Data do Cadastro</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (FN.Store.UI.Models.Produto produto in Model)
+            {
+                <tr id="produto-@produto.Id">
+
+                    <td>@produto.Nome</td>
+                    <td>@produto.Preco</td>
+                    <td>@produto.TipoDeProduto.Nome</td>
+                    <td>@produto.Qtde</td>
+                    <td>@produto.DataCadastro</td>
+                    <td class="btn-group">
+                        <a class="btn btn-sm btn-outline-success" href="~/Produtos/AddEdit/@produto.Id"> Edit <i class="fas fa-edit"></i></a>
+                        <button class="btn btn-sm btn-outline-danger" onclick="DelProd(@produto.Id, '@produto.Nome')">Excluir <i class="fas fa-trash-alt"></i></button>
+                    </td>
+                </tr>
+            }
+
+
+        </tbody>
+    </table>
+    <div data-id="0" class="modal" id="delModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Atenção</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p><center>Deseja <span style="color: #f00;">Excluir</span> o produto <strong><span style="color: #f00;" id="nomeProdutoModal">xpto?</span></strong> ?</center></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button id="confirmDelModal" type="button" class="btn btn-primary">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        function DelProd(id, nome) {
+            //let resp = confirm(`Deseja excluir o Produto '${nome}'?`)
+            //if (resp)
+            //{
+            //    ConfirmDelProd(id)
+            //}
+            $('#nomeProdutoModal').text(nome) //imputa o nome do produto na janela de atenção
+            $('#delModal').data('id', id).modal('show') //instalar o Jquery
+        }
+
+        $('#confirmDelModal').click(function () {
+            let _id = $('#delModal').data('id');
+            ConfirmDelProd(_id)
+            $('#delModal').modal('hide')
+        })
+
+        function ConfirmDelProd(id) {
+            //XMLHTTPREQUEST
+            let xhr = new XMLHttpRequest();
+            const url = `/Produtos/DelProd/${id}`
+
+            xhr.onreadystatechange = function () {
+                if (this.readyState === 4 && this.status === 404) {
+                    toastr.error('Produto não localizado!', 'Ops! algo deu errado')
+                }
+
+                if (this.readyState === 4 && this.status === 200) {
+                    //remover do HTML
+                    let tr = document.querySelector(`#produto-${id}`);
+                    if (tr !== null) {
+                        tr.remove()
+
+                    }
+                    toastr.success('produto excluido', 'Sucesso!!')
+
+                }
+
+            }
+
+            xhr.open('get', url)
+            xhr.send()
+
+
+        }
+
+    </script>
